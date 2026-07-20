@@ -42,7 +42,7 @@ export default function Navbar() {
             to="/dashboard"
             className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
           >
-            Open Dashboard
+            Masuk
           </Link>
         </div>
       </nav>
