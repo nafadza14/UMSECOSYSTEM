@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, startTransition, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Scale, Truck, Gauge, ArrowLeftRight, Users } from 'lucide-react'
 import type { Weighing } from '../lib/types'
@@ -137,8 +137,10 @@ export default function Dashboard() {
   }, [detail, filteredRows])
 
   function selectView(v: ViewKey) {
-    setView(v)
-    setDetail(null)
+    startTransition(() => {
+      setView(v)
+      setDetail(null)
+    })
   }
 
   const sourceLabel =
@@ -164,7 +166,7 @@ export default function Dashboard() {
                 <RankTable
                   data={productsAll}
                   unitLabel="tiket"
-                  onSelect={(name) => setDetail({ kind: 'product', name })}
+                  onSelect={(name) => startTransition(() => setDetail({ kind: 'product', name }))}
                 />
               </Panel>
             </div>
@@ -186,7 +188,7 @@ export default function Dashboard() {
               <RankTable
                 data={customers}
                 unitLabel="tiket"
-                onSelect={(name) => setDetail({ kind: 'customer', name })}
+                onSelect={(name) => startTransition(() => setDetail({ kind: 'customer', name }))}
               />
             </Panel>
             {detail?.kind === 'customer' && (
@@ -207,7 +209,7 @@ export default function Dashboard() {
               <RankTable
                 data={suppliers}
                 unitLabel="tiket"
-                onSelect={(name) => setDetail({ kind: 'supplier', name })}
+                onSelect={(name) => startTransition(() => setDetail({ kind: 'supplier', name }))}
               />
             </Panel>
             {detail?.kind === 'supplier' && (
