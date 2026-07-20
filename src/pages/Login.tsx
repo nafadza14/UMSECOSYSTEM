@@ -7,7 +7,7 @@ const VIDEO_URL =
   'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260403_050628_c4e32401-fab4-4a27-b7a8-6e9291cd5959.mp4';
 
 const MOCK_USERS: User[] = [
-  { id: '1', name: 'Pak Owner', role: 'owner' },
+  { id: '1', name: 'Bapak Yanto (Owner)', role: 'owner' },
   { id: '2', name: 'Budi (Manager)', role: 'manager' },
   { id: '3', name: 'Siti (Admin)', role: 'admin' },
   { id: '4', name: 'Klien Umum', role: 'klien', partnerCode: '01UMUM' },
