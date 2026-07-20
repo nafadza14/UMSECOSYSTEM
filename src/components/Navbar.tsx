@@ -9,7 +9,7 @@ export default function Navbar() {
       <nav className="liquid-glass rounded-xl px-4 py-2 flex items-center justify-between text-white">
         {/* Left: Logo */}
         <Link to="/" className="text-2xl font-semibold tracking-tight">
-          UMS
+          UMS ECOSYSTEM
         </Link>
 
         {/* Center: Links */}

@@ -10,9 +10,9 @@ import Dashboard from './pages/Dashboard'
 try {
   const saved = localStorage.getItem('theme')
   document.documentElement.dataset.theme =
-    saved === 'light' || saved === 'dark' ? saved : 'dark'
+    saved === 'light' || saved === 'dark' ? saved : 'light'
 } catch {
-  document.documentElement.dataset.theme = 'dark'
+  document.documentElement.dataset.theme = 'light'
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

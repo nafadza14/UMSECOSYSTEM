@@ -13,7 +13,7 @@ interface ThemeCtx {
   toggle: () => void
 }
 
-const Ctx = createContext<ThemeCtx>({ theme: 'dark', toggle: () => {} })
+const Ctx = createContext<ThemeCtx>({ theme: 'light', toggle: () => {} })
 
 function initial(): Theme {
   if (typeof document !== 'undefined') {
@@ -26,7 +26,7 @@ function initial(): Theme {
   } catch {
     /* ignore */
   }
-  return 'dark'
+  return 'light'
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

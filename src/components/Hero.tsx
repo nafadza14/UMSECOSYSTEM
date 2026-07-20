@@ -28,7 +28,7 @@ export default function Hero() {
             {/* Left column */}
             <div>
               <AnimatedHeading
-                text={'One ecosystem\nfor every operation.'}
+                text={'CV UPOYO MANDIRI SEJAHTERA\nOne ecosystem\nfor every operation.'}
                 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal mb-4"
                 style={{ letterSpacing: '-0.04em' }}
               />

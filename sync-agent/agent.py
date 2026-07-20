@@ -25,7 +25,12 @@ import urllib.error
 
 from reader import read_all
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+# Lokasi config.ini & buffer.sqlite: di samping .exe bila di-compile,
+# atau di samping agent.py bila dijalankan langsung dengan Python.
+if getattr(sys, "frozen", False):
+    HERE = os.path.dirname(sys.executable)
+else:
+    HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_cfg():

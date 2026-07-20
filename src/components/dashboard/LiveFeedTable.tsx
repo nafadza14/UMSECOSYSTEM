@@ -4,6 +4,22 @@ import type { Weighing } from '../../lib/types'
 import { formatKgFull } from '../../lib/data'
 
 type Filter = 'all' | 'customer' | 'supplier'
+type Period = 'day' | 'week' | 'month'
+
+const PERIODS: { key: Period; label: string }[] = [
+  { key: 'day', label: 'Hari' },
+  { key: 'week', label: 'Minggu' },
+  { key: 'month', label: 'Bulan' },
+]
+
+// Ambang tanggal (YYYY-MM-DD) berdasarkan tanggal terbaru di data.
+function threshold(period: Period, maxDate: string): string {
+  if (!maxDate) return ''
+  if (period === 'day') return maxDate
+  const d = new Date(maxDate)
+  d.setDate(d.getDate() - (period === 'week' ? 6 : 29))
+  return d.toISOString().slice(0, 10)
+}
 
 export default function LiveFeedTable({
   rows,
@@ -13,10 +29,18 @@ export default function LiveFeedTable({
   flashIds: Set<string>
 }) {
   const [filter, setFilter] = useState<Filter>('all')
+  const [period, setPeriod] = useState<Period>('day')
   const [q, setQ] = useState('')
 
+  const maxDate = useMemo(
+    () => rows.reduce((m, r) => (r.date_in > m ? r.date_in : m), ''),
+    [rows],
+  )
+
   const filtered = useMemo(() => {
+    const thr = threshold(period, maxDate)
     return rows.filter((r) => {
+      if (thr && r.date_in < thr) return false
       if (filter !== 'all' && r.type !== filter) return false
       if (q) {
         const s = q.toLowerCase()
@@ -29,11 +53,11 @@ export default function LiveFeedTable({
       }
       return true
     })
-  }, [rows, filter, q])
+  }, [rows, filter, period, q, maxDate])
 
   return (
     <div className="glass border border-[var(--border)] rounded-2xl p-5">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
         <div>
           <h3 className="text-base font-medium flex items-center gap-2">
             Live Feed
@@ -42,9 +66,30 @@ export default function LiveFeedTable({
               live
             </span>
           </h3>
-          <p className="text-sm text-[var(--muted)]">Penimbangan terbaru</p>
+          <p className="text-sm text-[var(--muted)]">
+            {filtered.length} tiket ·{' '}
+            {period === 'day' ? 'hari terakhir' : period === 'week' ? '7 hari' : '30 hari'}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Periode: Hari / Minggu / Bulan */}
+          <div className="flex rounded-lg bg-[var(--chip)] p-0.5 text-xs">
+            {PERIODS.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  period === p.key
+                    ? 'bg-[var(--pill-active-bg)] text-[var(--pill-active-text)]'
+                    : 'text-[var(--muted2)] hover:text-[var(--text)]'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tipe: Semua / Customer / Supplier */}
           <div className="flex rounded-lg bg-[var(--chip)] p-0.5 text-xs">
             {(['all', 'customer', 'supplier'] as Filter[]).map((f) => (
               <button
@@ -60,6 +105,7 @@ export default function LiveFeedTable({
               </button>
             ))}
           </div>
+
           <div className="relative">
             <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--faint)]" />
             <input
@@ -76,6 +122,7 @@ export default function LiveFeedTable({
         <table className="w-full text-sm min-w-[720px]">
           <thead>
             <tr className="text-left text-[var(--muted)] border-b border-[var(--border)]">
+              <th className="font-normal py-2 px-2">Tanggal</th>
               <th className="font-normal py-2 px-2">Waktu</th>
               <th className="font-normal py-2 px-2">Tiket</th>
               <th className="font-normal py-2 px-2">Tipe</th>
@@ -87,13 +134,16 @@ export default function LiveFeedTable({
             </tr>
           </thead>
           <tbody>
-            {filtered.slice(0, 60).map((r) => (
+            {filtered.slice(0, 100).map((r) => (
               <tr
                 key={r.id}
                 className={`border-b border-[var(--border-soft)] hover:bg-[var(--hover)] ${
                   flashIds.has(r.id) ? 'row-flash' : ''
                 }`}
               >
+                <td className="py-2.5 px-2 text-[var(--muted)] whitespace-nowrap">
+                  {r.date_in.slice(5).replace('-', '/')}
+                </td>
                 <td className="py-2.5 px-2 text-[var(--muted2)] whitespace-nowrap">
                   {r.time_in.slice(0, 5)}
                 </td>
