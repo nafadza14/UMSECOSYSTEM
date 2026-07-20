@@ -3,18 +3,14 @@ import type { ProductShare } from '../../lib/data'
 import { formatKg } from '../../lib/data'
 import { useTheme } from '../../lib/theme'
 
-const COLORS = [
-  '#6366f1', // indigo
-  '#10b981', // emerald
-  '#f59e0b', // amber
-  '#ef4444', // red
-  '#0ea5e9', // sky
-  '#a855f7', // purple
-]
+// Gradasi monokrom — mengikuti gaya UI. Light = gradasi hitam, dark = gradasi putih.
+const SHADES_LIGHT = ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8', '#cbd5e1']
+const SHADES_DARK = ['#f8fafc', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155']
 
 export default function ProductBreakdown({ data }: { data: ProductShare[] }) {
   const { theme } = useTheme()
   const light = theme === 'light'
+  const shades = light ? SHADES_LIGHT : SHADES_DARK
   const total = data.reduce((s, d) => s + d.netto, 0)
   const tipBg = light ? 'rgba(255,255,255,0.97)' : 'rgba(0,0,0,0.85)'
   const tipBorder = light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)'
@@ -27,7 +23,6 @@ export default function ProductBreakdown({ data }: { data: ProductShare[] }) {
         <p className="text-sm text-[var(--muted)]">Kontribusi netto</p>
       </div>
 
-      {/* Donut chart dengan total di tengah */}
       <div className="relative h-52">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -43,7 +38,7 @@ export default function ProductBreakdown({ data }: { data: ProductShare[] }) {
               stroke="none"
             >
               {data.map((_, i) => (
-                <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                <Cell key={i} fill={shades[i % shades.length]} />
               ))}
             </Pie>
             <Tooltip
@@ -65,14 +60,13 @@ export default function ProductBreakdown({ data }: { data: ProductShare[] }) {
         </div>
       </div>
 
-      {/* Legenda */}
       <div className="mt-3 space-y-1.5">
         {data.map((p, i) => (
           <div key={p.name} className="flex items-center justify-between text-sm">
             <span className="flex items-center gap-2 min-w-0">
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ background: COLORS[i % COLORS.length] }}
+                style={{ background: shades[i % shades.length] }}
               />
               <span className="text-[var(--muted2)] truncate">{p.name}</span>
             </span>

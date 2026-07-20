@@ -97,19 +97,103 @@ export function computeTrend(rows: Weighing[]): TrendPoint[] {
 export interface ProductShare {
   name: string
   netto: number
+  count: number
   pct: number
 }
 
-export function computeProductShare(rows: Weighing[]): ProductShare[] {
-  const map = new Map<string, number>()
+export function computeProductShare(rows: Weighing[], limit = 6): ProductShare[] {
+  const map = new Map<string, { netto: number; count: number }>()
   rows
     .filter((r) => r.status === 'completed')
-    .forEach((r) => map.set(r.product_name, (map.get(r.product_name) ?? 0) + r.netto_kg))
-  const total = Array.from(map.values()).reduce((s, v) => s + v, 0) || 1
+    .forEach((r) => {
+      const cur = map.get(r.product_name) ?? { netto: 0, count: 0 }
+      cur.netto += r.netto_kg
+      cur.count += 1
+      map.set(r.product_name, cur)
+    })
+  const total = Array.from(map.values()).reduce((s, v) => s + v.netto, 0) || 1
   return Array.from(map.entries())
-    .map(([name, netto]) => ({ name, netto, pct: Math.round((netto / total) * 100) }))
+    .map(([name, v]) => ({
+      name,
+      netto: v.netto,
+      count: v.count,
+      pct: Math.round((v.netto / total) * 100),
+    }))
     .sort((a, b) => b.netto - a.netto)
-    .slice(0, 6)
+    .slice(0, limit)
+}
+
+/** Ranking partner (customer / supplier) berdasarkan netto. */
+export interface PartnerShare {
+  name: string
+  netto: number
+  count: number
+  pct: number
+}
+
+export function computePartnerShare(
+  rows: Weighing[],
+  type: 'customer' | 'supplier',
+  limit = 100,
+): PartnerShare[] {
+  const map = new Map<string, { netto: number; count: number }>()
+  rows
+    .filter((r) => r.status === 'completed' && r.type === type)
+    .forEach((r) => {
+      const cur = map.get(r.partner_name) ?? { netto: 0, count: 0 }
+      cur.netto += r.netto_kg
+      cur.count += 1
+      map.set(r.partner_name, cur)
+    })
+  const total = Array.from(map.values()).reduce((s, v) => s + v.netto, 0) || 1
+  return Array.from(map.entries())
+    .map(([name, v]) => ({
+      name,
+      netto: v.netto,
+      count: v.count,
+      pct: Math.round((v.netto / total) * 100),
+    }))
+    .sort((a, b) => b.netto - a.netto)
+    .slice(0, limit)
+}
+
+/** Rekap keseluruhan (seluruh data ~ bulanan) untuk halaman Ringkasan. */
+export interface Recap {
+  totalNetto: number
+  truckCount: number
+  avgNetto: number
+  inbound: number
+  outbound: number
+  customerCount: number
+  supplierCount: number
+  dayCount: number
+  dateFrom: string
+  dateTo: string
+}
+
+export function computeRecap(rows: Weighing[]): Recap {
+  const done = rows.filter((r) => r.status === 'completed')
+  const dates = Array.from(new Set(done.map((r) => r.date_in))).sort()
+  const customer = done.filter((r) => r.type === 'customer')
+  const supplier = done.filter((r) => r.type === 'supplier')
+  const totalNetto = sumNetto(done)
+  return {
+    totalNetto,
+    truckCount: done.length,
+    avgNetto: done.length ? Math.round(totalNetto / done.length) : 0,
+    inbound: sumNetto(supplier),
+    outbound: sumNetto(customer),
+    customerCount: customer.length,
+    supplierCount: supplier.length,
+    dayCount: dates.length,
+    dateFrom: dates[0] ?? '',
+    dateTo: dates[dates.length - 1] ?? '',
+  }
+}
+
+export function formatShortDate(iso: string): string {
+  if (!iso) return '-'
+  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export function formatKg(kg: number): string {
