@@ -27,8 +27,13 @@ export default function Hero() {
           <div className="lg:grid lg:grid-cols-2 lg:items-end">
             {/* Left column */}
             <div>
+              <FadeIn delay={200} duration={1000}>
+                <h2 className="text-lg md:text-xl lg:text-2xl font-light text-white/80 mb-2">
+                  CV Upoyo Mandiri Sejahtera
+                </h2>
+              </FadeIn>
               <AnimatedHeading
-                text={'CV UPOYO MANDIRI SEJAHTERA\nOne ecosystem\nfor every operation.'}
+                text={'One ecosystem\nfor every operation.'}
                 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal mb-4"
                 style={{ letterSpacing: '-0.04em' }}
               />
