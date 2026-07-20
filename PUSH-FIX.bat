@@ -6,7 +6,7 @@ echo ================================================
 echo.
 
 REM 1. Set identitas git (tadi ini yang bikin commit gagal)
-git config --global user.email "winstonwiradiai@gmail.com"
+git config --global user.email "nafadaza@gmail.com"
 git config --global user.name "nafadza14"
 
 REM 2. Pastikan repo git ada
