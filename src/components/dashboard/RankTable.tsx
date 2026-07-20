@@ -8,13 +8,16 @@ interface RankRow {
   pct: number
 }
 
-/** Daftar ranking (customer/supplier/produk) dengan mini-bar monokrom. */
+/** Daftar ranking (customer/supplier/produk) dengan mini-bar monokrom.
+ *  Bila onSelect diberikan, tiap baris bisa diklik untuk lihat detail. */
 export default function RankTable({
   data,
   unitLabel = 'tiket',
+  onSelect,
 }: {
   data: RankRow[]
   unitLabel?: string
+  onSelect?: (name: string) => void
 }) {
   const { theme } = useTheme()
   const bar = theme === 'light' ? '#0f172a' : '#e2e8f0'
@@ -27,7 +30,13 @@ export default function RankTable({
   return (
     <div className="space-y-3">
       {data.map((d, i) => (
-        <div key={d.name} className="flex items-center gap-3">
+        <div
+          key={d.name}
+          onClick={onSelect ? () => onSelect(d.name) : undefined}
+          className={`flex items-center gap-3 ${
+            onSelect ? 'cursor-pointer -mx-2 px-2 py-1 rounded-lg hover:bg-[var(--hover)]' : ''
+          }`}
+        >
           <span className="w-5 text-xs text-[var(--faint)] shrink-0 text-right">{i + 1}</span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between text-sm mb-1">

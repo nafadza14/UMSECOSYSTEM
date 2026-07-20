@@ -22,6 +22,7 @@ import TonnageChart from '../components/dashboard/TonnageChart'
 import ProductBreakdown from '../components/dashboard/ProductBreakdown'
 import LiveFeedTable from '../components/dashboard/LiveFeedTable'
 import RankTable from '../components/dashboard/RankTable'
+import DetailTable from '../components/dashboard/DetailTable'
 
 function Panel({
   title,
@@ -59,6 +60,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [flashIds, setFlashIds] = useState<Set<string>>(new Set())
   const [view, setView] = useState<ViewKey>(user?.role === 'admin' ? 'feed' : 'overview')
+  const [detail, setDetail] = useState<{
+    kind: 'product' | 'customer' | 'supplier'
+    name: string
+  } | null>(null)
 
   const filteredNav = NAV.filter((nav) => {
     if (user?.role === 'admin') {
@@ -125,6 +130,17 @@ export default function Dashboard() {
   const customers = useMemo(() => computePartnerShare(filteredRows, 'customer'), [filteredRows])
   const suppliers = useMemo(() => computePartnerShare(filteredRows, 'supplier'), [filteredRows])
 
+  const detailRows = useMemo(() => {
+    if (!detail) return []
+    if (detail.kind === 'product') return filteredRows.filter((r) => r.product_name === detail.name)
+    return filteredRows.filter((r) => r.partner_name === detail.name && r.type === detail.kind)
+  }, [detail, filteredRows])
+
+  function selectView(v: ViewKey) {
+    setView(v)
+    setDetail(null)
+  }
+
   const sourceLabel =
     DATA_SOURCE === 'supabase'
       ? 'Supabase'
@@ -141,12 +157,21 @@ export default function Dashboard() {
 
       case 'product':
         return (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <ProductBreakdown data={products6} />
-            <Panel title="Ranking Produk" subtitle="Berdasarkan total netto">
-              <RankTable data={productsAll} unitLabel="tiket" />
-            </Panel>
-          </div>
+          <>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ProductBreakdown data={products6} />
+              <Panel title="Ranking Produk" subtitle="Klik nama produk untuk lihat detail transaksi">
+                <RankTable
+                  data={productsAll}
+                  unitLabel="tiket"
+                  onSelect={(name) => setDetail({ kind: 'product', name })}
+                />
+              </Panel>
+            </div>
+            {detail?.kind === 'product' && (
+              <DetailTable title={detail.name} rows={detailRows} onClose={() => setDetail(null)} />
+            )}
+          </>
         )
 
       case 'customer':
@@ -157,9 +182,16 @@ export default function Dashboard() {
               <KpiCard icon={Users} label="Jumlah Customer" value={String(customers.length)} sub="partner aktif" />
               <KpiCard icon={Scale} label="Rata-rata / Tiket" value={formatKg(recap.customerCount ? Math.round(recap.outbound / recap.customerCount) : 0)} sub="netto keluar" />
             </div>
-            <Panel title="Ranking Customer" subtitle="Barang keluar terbanyak">
-              <RankTable data={customers} unitLabel="tiket" />
+            <Panel title="Ranking Customer" subtitle="Klik nama customer untuk lihat detail transaksi">
+              <RankTable
+                data={customers}
+                unitLabel="tiket"
+                onSelect={(name) => setDetail({ kind: 'customer', name })}
+              />
             </Panel>
+            {detail?.kind === 'customer' && (
+              <DetailTable title={detail.name} rows={detailRows} onClose={() => setDetail(null)} />
+            )}
           </>
         )
 
@@ -171,9 +203,16 @@ export default function Dashboard() {
               <KpiCard icon={Truck} label="Jumlah Supplier" value={String(suppliers.length)} sub="partner aktif" />
               <KpiCard icon={Scale} label="Rata-rata / Tiket" value={formatKg(recap.supplierCount ? Math.round(recap.inbound / recap.supplierCount) : 0)} sub="netto masuk" />
             </div>
-            <Panel title="Ranking Supplier" subtitle="Barang masuk terbanyak">
-              <RankTable data={suppliers} unitLabel="tiket" />
+            <Panel title="Ranking Supplier" subtitle="Klik nama supplier untuk lihat detail transaksi">
+              <RankTable
+                data={suppliers}
+                unitLabel="tiket"
+                onSelect={(name) => setDetail({ kind: 'supplier', name })}
+              />
             </Panel>
+            {detail?.kind === 'supplier' && (
+              <DetailTable title={detail.name} rows={detailRows} onClose={() => setDetail(null)} />
+            )}
           </>
         )
 
@@ -210,7 +249,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex bg-[var(--bg)] text-[var(--text)]">
-      <Sidebar active={view} onSelect={setView} />
+      <Sidebar active={view} onSelect={selectView} />
 
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Mobile top nav */}
@@ -230,7 +269,7 @@ export default function Dashboard() {
             {filteredNav.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
-                onClick={() => setView(key)}
+                onClick={() => selectView(key)}
                 className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg text-sm transition-colors ${
                   view === key
                     ? 'bg-[var(--chip)] text-[var(--text)] font-medium'
