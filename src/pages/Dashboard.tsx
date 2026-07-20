@@ -23,6 +23,7 @@ import ProductBreakdown from '../components/dashboard/ProductBreakdown'
 import LiveFeedTable from '../components/dashboard/LiveFeedTable'
 import RankTable from '../components/dashboard/RankTable'
 import DetailTable from '../components/dashboard/DetailTable'
+import AgentMonitor from '../components/dashboard/AgentMonitor'
 
 function Panel({
   title,
@@ -50,6 +51,7 @@ const SUBTITLE: Record<ViewKey, string> = {
   product: 'Distribusi tonase menurut produk',
   customer: 'Barang keluar — penjualan ke customer',
   supplier: 'Barang masuk — pembelian dari supplier',
+  monitor: 'Pemantauan asupan data dari Sync Agent',
 }
 
 export default function Dashboard() {
@@ -67,7 +69,7 @@ export default function Dashboard() {
 
   const filteredNav = NAV.filter((nav) => {
     if (user?.role === 'admin') {
-      return nav.key === 'feed';
+      return nav.key === 'feed' || nav.key === 'monitor';
     }
     if (user?.role === 'klien') {
       return nav.key === 'overview' || nav.key === 'feed';
@@ -156,6 +158,10 @@ export default function Dashboard() {
     switch (view) {
       case 'feed':
         return <LiveFeedTable rows={filteredRows} flashIds={flashIds} />
+
+      case 'monitor':
+        return <AgentMonitor totalCloud={filteredRows.length} />
+
 
       case 'product':
         return (

@@ -5,6 +5,7 @@ import {
   PieChart,
   Users,
   Truck,
+  Activity,
   ArrowLeft,
   LogOut,
   type LucideIcon,
@@ -12,7 +13,7 @@ import {
 import ThemeToggle from '../ThemeToggle'
 import { useAuth } from '../../contexts/AuthContext'
 
-export type ViewKey = 'overview' | 'feed' | 'product' | 'customer' | 'supplier'
+export type ViewKey = 'overview' | 'feed' | 'product' | 'customer' | 'supplier' | 'monitor'
 
 export const NAV: { key: ViewKey; label: string; icon: LucideIcon }[] = [
   { key: 'overview', label: 'Ringkasan', icon: LayoutDashboard },
@@ -20,6 +21,7 @@ export const NAV: { key: ViewKey; label: string; icon: LucideIcon }[] = [
   { key: 'product', label: 'Per Produk', icon: PieChart },
   { key: 'customer', label: 'Customer', icon: Users },
   { key: 'supplier', label: 'Supplier', icon: Truck },
+  { key: 'monitor', label: 'Monitor Agent', icon: Activity },
 ]
 
 export default function Sidebar({
@@ -39,7 +41,7 @@ export default function Sidebar({
 
   const filteredNav = NAV.filter((nav) => {
     if (user?.role === 'admin') {
-      return nav.key === 'feed';
+      return nav.key === 'feed' || nav.key === 'monitor';
     }
     if (user?.role === 'klien') {
       return nav.key === 'overview' || nav.key === 'feed';
