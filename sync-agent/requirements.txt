@@ -1,0 +1,5 @@
+# Produksi (Windows / PC admin):
+pyodbc>=5.1
+
+# Uji tanpa Access driver (opsional, mis. di Linux/mac):
+# access-parser>=0.0.6

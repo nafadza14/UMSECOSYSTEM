@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* ============================ THEME TOKENS ============================ */
+:root,
+[data-theme='dark'] {
+  --bg: #000000;
+  --text: #ffffff;
+  --muted: #9ca3af;
+  --muted2: #d1d5db;
+  --faint: #6b7280;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-soft: rgba(255, 255, 255, 0.05);
+  --chip: rgba(255, 255, 255, 0.1);
+  --chip-strong: rgba(255, 255, 255, 0.2);
+  --hover: rgba(255, 255, 255, 0.05);
+  --flash: rgba(255, 255, 255, 0.12);
+  --scroll: rgba(255, 255, 255, 0.15);
+  --pill-active-bg: #ffffff;
+  --pill-active-text: #000000;
+  /* glass (dashboard/ecosystem cards) */
+  --glass-bg: rgba(0, 0, 0, 0.4);
+  --glass-inset: rgba(255, 255, 255, 0.1);
+  --glass-edge-strong: rgba(255, 255, 255, 0.3);
+  --glass-edge-soft: rgba(255, 255, 255, 0.1);
+  /* chart */
+  --chart-line: #ffffff;
+}
+
+[data-theme='light'] {
+  --bg: #f5f6f8;
+  --text: #0f1115;
+  --muted: #5b6472;
+  --muted2: #374151;
+  --faint: #9aa1ac;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-soft: rgba(0, 0, 0, 0.06);
+  --chip: rgba(0, 0, 0, 0.05);
+  --chip-strong: rgba(0, 0, 0, 0.1);
+  --hover: rgba(0, 0, 0, 0.04);
+  --flash: rgba(0, 0, 0, 0.06);
+  --scroll: rgba(0, 0, 0, 0.2);
+  --pill-active-bg: #111827;
+  --pill-active-text: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-inset: rgba(255, 255, 255, 0.6);
+  --glass-edge-strong: rgba(0, 0, 0, 0.1);
+  --glass-edge-soft: rgba(0, 0, 0, 0.04);
+  --chart-line: #111827;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ===== Liquid Glass — FIXED DARK (dipakai hero/navbar di atas video) ===== */
+.liquid-glass {
+  background: rgba(0, 0, 0, 0.4);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.1) 80%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ===== Glass — THEMED (dipakai kartu dashboard & ecosystem) ===== */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: inset 0 1px 1px var(--glass-inset);
+  position: relative;
+  overflow: hidden;
+}
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(
+    180deg,
+    var(--glass-edge-strong) 0%,
+    var(--glass-edge-soft) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    var(--glass-edge-soft) 80%,
+    var(--glass-edge-strong) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Thin scrollbar for dashboard tables */
+.thin-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--scroll);
+  border-radius: 8px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes rowflash {
+  from {
+    background-color: var(--flash);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.row-flash {
+  animation: rowflash 2.5s ease-out;
+}
