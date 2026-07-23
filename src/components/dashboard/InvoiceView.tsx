@@ -89,7 +89,8 @@ export default function InvoiceView({ rows }: { rows: Weighing[] }) {
             Belum ada tagihan.
           </div>
         ) : (
-          <div className="overflow-x-auto thin-scroll -mx-2">
+          <>
+          <div className="hidden md:block overflow-x-auto thin-scroll -mx-2">
             <table className="w-full text-sm min-w-[560px]">
               <thead>
                 <tr className="text-left text-[var(--muted)] border-b border-[var(--border)]">
@@ -133,6 +134,34 @@ export default function InvoiceView({ rows }: { rows: Weighing[] }) {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile: kartu invoice */}
+          <div className="md:hidden space-y-2">
+            {groups.map((g) => (
+              <div key={g.date} className="rounded-xl border border-[var(--border-soft)] p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{formatShortDate(g.date)}</span>
+                  <span className="text-sm font-semibold tabular-nums">{formatRp(g.total)}</span>
+                </div>
+                <div className="text-xs text-[var(--muted)] mt-0.5">{g.items.length} item</div>
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    onClick={() => printInvoice(makeInvoice(g))}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--chip)]"
+                  >
+                    <Printer className="w-3.5 h-3.5" /> Print
+                  </button>
+                  <button
+                    onClick={() => downloadInvoice(makeInvoice(g), `invoice-${g.date}.pdf`)}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs px-2.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--chip)]"
+                  >
+                    <Download className="w-3.5 h-3.5" /> PDF
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          </>
         )}
       </div>
 

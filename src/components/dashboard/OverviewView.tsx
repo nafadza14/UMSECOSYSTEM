@@ -238,7 +238,7 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
               <button className={presetCls(!isDay && !isMonth)} onClick={() => preset('week')}>7 hari</button>
               <button className={presetCls(isMonth)} onClick={() => preset('month')}>Semua</button>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-xs text-[var(--muted)]">Dari</span>
               <input
                 type="date"

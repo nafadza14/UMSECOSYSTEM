@@ -120,7 +120,7 @@ export default function LiveFeedTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto thin-scroll -mx-2">
+      <div className="hidden lg:block overflow-x-auto thin-scroll -mx-2">
         <table className="w-full text-sm min-w-[840px]">
           <thead>
             <tr className="text-left text-[var(--muted)] border-b border-[var(--border)]">
@@ -197,6 +197,56 @@ export default function LiveFeedTable({
             ))}
           </tbody>
         </table>
+        {filtered.length === 0 && (
+          <div className="text-center text-[var(--faint)] py-10 text-sm">Tidak ada data.</div>
+        )}
+      </div>
+
+      {/* Mobile: kartu */}
+      <div className="lg:hidden space-y-2">
+        {filtered.slice(0, 100).map((r) => (
+          <div
+            key={r.id}
+            className={`rounded-xl border border-[var(--border-soft)] p-3 ${
+              flashIds.has(r.id) ? 'row-flash' : ''
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium truncate">{r.truck_no}</span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${
+                  r.type === 'supplier'
+                    ? 'border-sky-400/40 text-sky-500'
+                    : 'border-amber-400/40 text-amber-500'
+                }`}
+              >
+                {r.type === 'supplier' ? 'Supplier' : 'Customer'}
+              </span>
+            </div>
+            <div className="text-xs text-[var(--muted)] mt-0.5">
+              {r.date_in.slice(5).replace('-', '/')} · {r.time_in.slice(0, 5)} · #{r.ticket_no}
+            </div>
+            <div className="text-sm mt-1 text-[var(--muted2)] truncate">
+              {r.partner_name} · {r.product_name}
+            </div>
+            <div className="flex items-center justify-between mt-1.5 text-sm">
+              <span className="text-[var(--muted2)]">
+                {r.status === 'in_progress' ? (
+                  <span className="text-amber-500 text-xs">In progress</span>
+                ) : (
+                  `Netto ${formatKgFull(r.netto_kg)}`
+                )}
+              </span>
+              <span className="font-medium tabular-nums">
+                {r.status === 'in_progress'
+                  ? '—'
+                  : valueKind(r) === 'nihil'
+                    ? 'Rp 0'
+                    : formatRp(valueOf(r))}
+              </span>
+            </div>
+          </div>
+        ))}
         {filtered.length === 0 && (
           <div className="text-center text-[var(--faint)] py-10 text-sm">Tidak ada data.</div>
         )}

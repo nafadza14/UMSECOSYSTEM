@@ -38,7 +38,7 @@ export default function DetailTable({
         </button>
       </div>
 
-      <div className="overflow-x-auto thin-scroll -mx-2">
+      <div className="hidden lg:block overflow-x-auto thin-scroll -mx-2">
         <table className="w-full text-sm min-w-[960px]">
           <thead>
             <tr className="text-left text-[var(--muted)] border-b border-[var(--border)]">
@@ -101,6 +101,45 @@ export default function DetailTable({
             ))}
           </tbody>
         </table>
+        {rows.length === 0 && (
+          <div className="text-center text-[var(--faint)] py-8 text-sm">Tidak ada transaksi.</div>
+        )}
+      </div>
+
+      {/* Mobile: kartu */}
+      <div className="lg:hidden space-y-2">
+        {sorted.map((r) => (
+          <div key={r.id} className="rounded-xl border border-[var(--border-soft)] p-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium truncate">{r.truck_no}</span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${
+                  r.type === 'supplier'
+                    ? 'border-sky-400/40 text-sky-500'
+                    : 'border-amber-400/40 text-amber-500'
+                }`}
+              >
+                {r.type === 'supplier' ? 'Supplier' : 'Customer'}
+              </span>
+            </div>
+            <div className="text-xs text-[var(--muted)] mt-0.5">
+              {r.date_in} · {r.time_in.slice(0, 5)} · #{r.ticket_no} · {r.operator}
+            </div>
+            <div className="text-sm mt-1 text-[var(--muted2)] truncate">
+              {r.partner_name} · {r.product_name}
+            </div>
+            <div className="grid grid-cols-3 gap-1 mt-2 text-xs text-[var(--muted)]">
+              <span>Bruto: {num(r.gross_kg)}</span>
+              <span>Tara: {num(r.tare_kg)}</span>
+              <span className="text-[var(--text)] font-medium">Netto: {num(r.netto_kg)}</span>
+            </div>
+            <div className="flex items-center justify-end mt-1.5 text-sm font-medium tabular-nums">
+              {valueKind(r) === 'jasa'
+                ? `${formatRp(valueOf(r))} (jasa)`
+                : formatRp(valueOf(r))}
+            </div>
+          </div>
+        ))}
         {rows.length === 0 && (
           <div className="text-center text-[var(--faint)] py-8 text-sm">Tidak ada transaksi.</div>
         )}
