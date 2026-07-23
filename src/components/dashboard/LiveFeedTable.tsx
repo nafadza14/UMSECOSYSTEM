@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import type { Weighing } from '../../lib/types'
 import { formatKgFull } from '../../lib/data'
-import { usePrices, valueOf, valueKind, formatRp } from '../../lib/prices'
+import { usePrices, valueKind, formatRp } from '../../lib/prices'
 
 type Filter = 'all' | 'customer' | 'supplier'
 type Period = 'day' | 'week' | 'month'
@@ -29,7 +29,7 @@ export default function LiveFeedTable({
   rows: Weighing[]
   flashIds: Set<string>
 }) {
-  const { prices } = usePrices()
+  const { valueOf } = usePrices()
   const [filter, setFilter] = useState<Filter>('all')
   const [period, setPeriod] = useState<Period>('day')
   const [q, setQ] = useState('')
@@ -179,7 +179,7 @@ export default function LiveFeedTable({
                     <span className="text-[var(--faint)]">Rp 0</span>
                   ) : (
                     <span>
-                      {formatRp(valueOf(r, prices))}
+                      {formatRp(valueOf(r))}
                       {valueKind(r) === 'jasa' && (
                         <span className="text-[10px] text-[var(--faint)] ml-1">jasa</span>
                       )}

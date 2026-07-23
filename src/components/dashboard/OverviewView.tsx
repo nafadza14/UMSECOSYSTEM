@@ -10,7 +10,7 @@ import {
   formatShortDate,
 } from '../../lib/data'
 import { printReport, downloadReport, type ReportData } from '../../lib/report'
-import { usePrices, valueOf as priceValueOf } from '../../lib/prices'
+import { usePrices, valueKind, formatRp } from '../../lib/prices'
 import { useTheme } from '../../lib/theme'
 import KpiCard from './KpiCard'
 import TonnageChart from './TonnageChart'
@@ -61,9 +61,34 @@ function KpiRow({ recap }: { recap: ReturnType<typeof computeRecap> }) {
   )
 }
 
+function revenue(rows: Weighing[], valueOf: (r: Weighing) => number) {
+  let komoditas = 0
+  let jasa = 0
+  rows
+    .filter((r) => r.status === 'completed')
+    .forEach((r) => {
+      const v = valueOf(r)
+      if (valueKind(r) === 'jasa') jasa += v
+      else komoditas += v
+    })
+  return { total: komoditas + jasa, komoditas, jasa }
+}
+
+function RevenueCard({ rev }: { rev: { total: number; komoditas: number; jasa: number } }) {
+  return (
+    <div className="glass border border-[var(--border)] rounded-2xl p-5">
+      <div className="text-sm text-[var(--muted)] mb-1">Estimasi Pendapatan</div>
+      <div className="text-3xl font-semibold tracking-tight">{formatRp(rev.total)}</div>
+      <div className="text-sm text-[var(--faint)] mt-1">
+        Komoditas {formatRp(rev.komoditas)} · Jasa {formatRp(rev.jasa)}
+      </div>
+    </div>
+  )
+}
+
 export default function OverviewView({ rows }: { rows: Weighing[] }) {
   const { theme } = useTheme()
-  const { prices } = usePrices()
+  const { valueOf } = usePrices()
 
   const dates = useMemo(
     () => Array.from(new Set(rows.map((r) => r.date_in))).sort(),
@@ -102,6 +127,9 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
   const custR = useMemo(() => computePartnerShare(rangeRows, 'customer'), [rangeRows])
   const suppR = useMemo(() => computePartnerShare(rangeRows, 'supplier'), [rangeRows])
 
+  const revenueDay = useMemo(() => revenue(dayRows, valueOf), [dayRows, valueOf])
+  const revenueR = useMemo(() => revenue(rangeRows, valueOf), [rangeRows, valueOf])
+
   const makeTopReport = (): ReportData => ({
     title: 'Laporan Data Terbaru Harian',
     period: formatShortDate(maxDate),
@@ -110,7 +138,7 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
     customers: custDay,
     suppliers: suppDay,
     transactions: dayRows,
-    valueOf: (r) => priceValueOf(r, prices),
+    valueOf,
   })
   const makeBottomReport = (): ReportData => ({
     title: 'Laporan Data Penimbangan',
@@ -120,7 +148,7 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
     customers: custR,
     suppliers: suppR,
     transactions: rangeRows,
-    valueOf: (r) => priceValueOf(r, prices),
+    valueOf,
   })
 
   const preset = (kind: 'day' | 'week' | 'month') => {
@@ -168,6 +196,7 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
         </div>
 
         <KpiRow recap={recapDay} />
+        <RevenueCard rev={revenueDay} />
 
         <div className="grid gap-6 lg:grid-cols-3">
           <ProductBreakdown data={productsDay} />
@@ -227,6 +256,7 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
         </div>
 
         <KpiRow recap={recapR} />
+        <RevenueCard rev={revenueR} />
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">

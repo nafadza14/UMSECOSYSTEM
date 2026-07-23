@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import type { Weighing } from '../../lib/types'
 import { formatKgFull } from '../../lib/data'
-import { usePrices, valueOf, valueKind, formatRp } from '../../lib/prices'
+import { usePrices, valueKind, formatRp } from '../../lib/prices'
 
 /** Tabel transaksi detail — kolom mengikuti database Truck Scale (.mdb). */
 export default function DetailTable({
@@ -13,12 +13,12 @@ export default function DetailTable({
   rows: Weighing[]
   onClose: () => void
 }) {
-  const { prices } = usePrices()
+  const { valueOf } = usePrices()
   const sorted = [...rows].sort((a, b) =>
     (b.date_in + b.time_in).localeCompare(a.date_in + a.time_in),
   )
   const total = rows.reduce((s, r) => s + r.netto_kg, 0)
-  const totalValue = rows.reduce((s, r) => s + valueOf(r, prices), 0)
+  const totalValue = rows.reduce((s, r) => s + valueOf(r), 0)
   const num = (v: number) => (v ? v.toLocaleString('id-ID') : '-')
 
   return (
@@ -86,8 +86,8 @@ export default function DetailTable({
                 <td className="py-2 px-2 text-right tabular-nums whitespace-nowrap font-medium">{num(r.netto_kg)}</td>
                 <td className="py-2 px-2 text-right tabular-nums whitespace-nowrap">
                   {valueKind(r) === 'jasa'
-                    ? `${formatRp(valueOf(r, prices))} (jasa)`
-                    : formatRp(valueOf(r, prices))}
+                    ? `${formatRp(valueOf(r))} (jasa)`
+                    : formatRp(valueOf(r))}
                 </td>
                 <td className="py-2 px-2 text-[var(--muted)] whitespace-nowrap">{r.operator}</td>
                 <td className="py-2 px-2">
