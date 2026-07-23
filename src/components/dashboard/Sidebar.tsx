@@ -7,6 +7,7 @@ import {
   Truck,
   Activity,
   Tags,
+  Receipt,
   ArrowLeft,
   LogOut,
   type LucideIcon,
@@ -22,10 +23,12 @@ export type ViewKey =
   | 'supplier'
   | 'monitor'
   | 'harga'
+  | 'invoice'
 
 export const NAV: { key: ViewKey; label: string; icon: LucideIcon }[] = [
   { key: 'overview', label: 'Ringkasan', icon: LayoutDashboard },
   { key: 'feed', label: 'Live Feed', icon: ListChecks },
+  { key: 'invoice', label: 'Invoice', icon: Receipt },
   { key: 'product', label: 'Per Produk', icon: PieChart },
   { key: 'customer', label: 'Customer', icon: Users },
   { key: 'supplier', label: 'Supplier', icon: Truck },
@@ -53,9 +56,9 @@ export default function Sidebar({
       return nav.key === 'feed' || nav.key === 'monitor';
     }
     if (user?.role === 'klien') {
-      return nav.key === 'overview' || nav.key === 'feed';
+      return nav.key === 'overview' || nav.key === 'feed' || nav.key === 'invoice';
     }
-    return true; // owner, manager
+    return nav.key !== 'invoice'; // owner, manager (semua kecuali invoice)
   });
 
   return (

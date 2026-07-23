@@ -24,6 +24,7 @@ import DetailTable from '../components/dashboard/DetailTable'
 import AgentMonitor from '../components/dashboard/AgentMonitor'
 import OverviewView from '../components/dashboard/OverviewView'
 import HargaView from '../components/dashboard/HargaView'
+import InvoiceView from '../components/dashboard/InvoiceView'
 
 function Panel({
   title,
@@ -53,6 +54,7 @@ const SUBTITLE: Record<ViewKey, string> = {
   supplier: 'Barang masuk — pembelian dari supplier',
   monitor: 'Pemantauan asupan data dari Sync Agent',
   harga: 'Atur harga komoditas & jasa titip timbang',
+  invoice: 'Rekap tagihan harian yang harus dibayar',
 }
 
 export default function Dashboard() {
@@ -73,9 +75,9 @@ export default function Dashboard() {
       return nav.key === 'feed' || nav.key === 'monitor';
     }
     if (user?.role === 'klien') {
-      return nav.key === 'overview' || nav.key === 'feed';
+      return nav.key === 'overview' || nav.key === 'feed' || nav.key === 'invoice';
     }
-    return true; // owner, manager
+    return nav.key !== 'invoice'; // owner, manager (semua kecuali invoice)
   });
 
   const handleLogout = () => {
@@ -120,8 +122,14 @@ export default function Dashboard() {
   }, [])
 
   const filteredRows = useMemo(() => {
-    if (user?.role === 'klien') {
-      return rows.filter((r) => r.partner_code === user.partnerCode)
+    if (user?.role === 'klien' && user.partnerCode) {
+      const pc = String(user.partnerCode).toUpperCase()
+      const keyword = pc.replace(/[0-9]/g, '') // "01UMUM" -> "UMUM", "UPOYO" -> "UPOYO"
+      return rows.filter((r) => {
+        const code = String(r.partner_code).trim().toUpperCase()
+        const name = r.partner_name.toUpperCase()
+        return code === pc || (keyword.length >= 3 && (name.includes(keyword) || pc.includes(name)))
+      })
     }
     return rows
   }, [rows, user])
@@ -164,6 +172,9 @@ export default function Dashboard() {
 
       case 'harga':
         return <HargaView rows={rows} />
+
+      case 'invoice':
+        return <InvoiceView rows={filteredRows} />
 
 
       case 'product':

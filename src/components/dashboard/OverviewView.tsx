@@ -12,6 +12,7 @@ import {
 import { printReport, downloadReport, type ReportData } from '../../lib/report'
 import { usePrices, valueKind, formatRp } from '../../lib/prices'
 import { useTheme } from '../../lib/theme'
+import { useAuth } from '../../contexts/AuthContext'
 import KpiCard from './KpiCard'
 import TonnageChart from './TonnageChart'
 import ProductBreakdown from './ProductBreakdown'
@@ -74,10 +75,16 @@ function revenue(rows: Weighing[], valueOf: (r: Weighing) => number) {
   return { total: komoditas + jasa, komoditas, jasa }
 }
 
-function RevenueCard({ rev }: { rev: { total: number; komoditas: number; jasa: number } }) {
+function RevenueCard({
+  rev,
+  label,
+}: {
+  rev: { total: number; komoditas: number; jasa: number }
+  label: string
+}) {
   return (
     <div className="glass border border-[var(--border)] rounded-2xl p-5">
-      <div className="text-sm text-[var(--muted)] mb-1">Estimasi Pendapatan</div>
+      <div className="text-sm text-[var(--muted)] mb-1">{label}</div>
       <div className="text-3xl font-semibold tracking-tight">{formatRp(rev.total)}</div>
       <div className="text-sm text-[var(--faint)] mt-1">
         Komoditas {formatRp(rev.komoditas)} · Jasa {formatRp(rev.jasa)}
@@ -89,6 +96,8 @@ function RevenueCard({ rev }: { rev: { total: number; komoditas: number; jasa: n
 export default function OverviewView({ rows }: { rows: Weighing[] }) {
   const { theme } = useTheme()
   const { valueOf } = usePrices()
+  const { user } = useAuth()
+  const revLabel = user?.role === 'klien' ? 'Harga' : 'Estimasi Pendapatan'
 
   const dates = useMemo(
     () => Array.from(new Set(rows.map((r) => r.date_in))).sort(),
@@ -196,7 +205,7 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
         </div>
 
         <KpiRow recap={recapDay} />
-        <RevenueCard rev={revenueDay} />
+        <RevenueCard rev={revenueDay} label={revLabel} />
 
         <div className="grid gap-6 lg:grid-cols-3">
           <ProductBreakdown data={productsDay} />
@@ -256,7 +265,7 @@ export default function OverviewView({ rows }: { rows: Weighing[] }) {
         </div>
 
         <KpiRow recap={recapR} />
-        <RevenueCard rev={revenueR} />
+        <RevenueCard rev={revenueR} label={revLabel} />
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
