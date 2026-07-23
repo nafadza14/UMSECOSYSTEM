@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import type { Weighing } from '../../lib/types'
 import { formatKgFull } from '../../lib/data'
+import { usePrices, valueOf, valueKind, formatRp } from '../../lib/prices'
 
 type Filter = 'all' | 'customer' | 'supplier'
 type Period = 'day' | 'week' | 'month'
@@ -28,6 +29,7 @@ export default function LiveFeedTable({
   rows: Weighing[]
   flashIds: Set<string>
 }) {
+  const { prices } = usePrices()
   const [filter, setFilter] = useState<Filter>('all')
   const [period, setPeriod] = useState<Period>('day')
   const [q, setQ] = useState('')
@@ -119,7 +121,7 @@ export default function LiveFeedTable({
       </div>
 
       <div className="overflow-x-auto thin-scroll -mx-2">
-        <table className="w-full text-sm min-w-[720px]">
+        <table className="w-full text-sm min-w-[840px]">
           <thead>
             <tr className="text-left text-[var(--muted)] border-b border-[var(--border)]">
               <th className="font-normal py-2 px-2">Tanggal</th>
@@ -130,6 +132,7 @@ export default function LiveFeedTable({
               <th className="font-normal py-2 px-2">Produk</th>
               <th className="font-normal py-2 px-2">No. Truk</th>
               <th className="font-normal py-2 px-2 text-right">Netto</th>
+              <th className="font-normal py-2 px-2 text-right">Nilai</th>
               <th className="font-normal py-2 px-2">Status</th>
             </tr>
           </thead>
@@ -167,6 +170,20 @@ export default function LiveFeedTable({
                     <span className="text-[var(--faint)]">—</span>
                   ) : (
                     formatKgFull(r.netto_kg)
+                  )}
+                </td>
+                <td className="py-2.5 px-2 text-right whitespace-nowrap tabular-nums">
+                  {r.status === 'in_progress' ? (
+                    <span className="text-[var(--faint)]">—</span>
+                  ) : valueKind(r) === 'nihil' ? (
+                    <span className="text-[var(--faint)]">Rp 0</span>
+                  ) : (
+                    <span>
+                      {formatRp(valueOf(r, prices))}
+                      {valueKind(r) === 'jasa' && (
+                        <span className="text-[10px] text-[var(--faint)] ml-1">jasa</span>
+                      )}
+                    </span>
                   )}
                 </td>
                 <td className="py-2.5 px-2">

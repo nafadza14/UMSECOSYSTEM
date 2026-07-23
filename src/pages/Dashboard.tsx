@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState, startTransition, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Scale, Truck, Gauge, ArrowLeftRight, Users } from 'lucide-react'
+import { Scale, Truck, ArrowLeftRight, Users } from 'lucide-react'
 import type { Weighing } from '../lib/types'
 import {
   fetchWeighings,
   computeRecap,
-  computeTrend,
   computeProductShare,
   computePartnerShare,
   formatKg,
@@ -18,12 +17,13 @@ import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import KpiCard from '../components/dashboard/KpiCard'
-import TonnageChart from '../components/dashboard/TonnageChart'
 import ProductBreakdown from '../components/dashboard/ProductBreakdown'
 import LiveFeedTable from '../components/dashboard/LiveFeedTable'
 import RankTable from '../components/dashboard/RankTable'
 import DetailTable from '../components/dashboard/DetailTable'
 import AgentMonitor from '../components/dashboard/AgentMonitor'
+import OverviewView from '../components/dashboard/OverviewView'
+import HargaView from '../components/dashboard/HargaView'
 
 function Panel({
   title,
@@ -52,6 +52,7 @@ const SUBTITLE: Record<ViewKey, string> = {
   customer: 'Barang keluar — penjualan ke customer',
   supplier: 'Barang masuk — pembelian dari supplier',
   monitor: 'Pemantauan asupan data dari Sync Agent',
+  harga: 'Atur harga komoditas & jasa titip timbang',
 }
 
 export default function Dashboard() {
@@ -126,7 +127,6 @@ export default function Dashboard() {
   }, [rows, user])
 
   const recap = useMemo(() => computeRecap(filteredRows), [filteredRows])
-  const trend = useMemo(() => computeTrend(filteredRows), [filteredRows])
   const products6 = useMemo(() => computeProductShare(filteredRows, 6), [filteredRows])
   const productsAll = useMemo(() => computeProductShare(filteredRows, 20), [filteredRows])
   const customers = useMemo(() => computePartnerShare(filteredRows, 'customer'), [filteredRows])
@@ -161,6 +161,9 @@ export default function Dashboard() {
 
       case 'monitor':
         return <AgentMonitor totalCloud={filteredRows.length} />
+
+      case 'harga':
+        return <HargaView rows={rows} />
 
 
       case 'product':
@@ -226,32 +229,7 @@ export default function Dashboard() {
 
       case 'overview':
       default:
-        return (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <KpiCard icon={Scale} label="Total Netto" value={formatKg(recap.totalNetto)} sub={`${recap.dayCount} hari`} />
-              <KpiCard icon={Truck} label="Jumlah Truk" value={String(recap.truckCount)} sub="tiket selesai" />
-              <KpiCard icon={Gauge} label="Rata-rata / Truk" value={formatKg(recap.avgNetto)} sub="netto" />
-              <KpiCard icon={ArrowLeftRight} label="Masuk / Keluar" value={formatKg(recap.inbound)} sub={`keluar ${formatKg(recap.outbound)}`} />
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <TonnageChart data={trend} />
-              </div>
-              <ProductBreakdown data={products6} />
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Panel title="Top Customer" subtitle="Barang keluar terbanyak">
-                <RankTable data={customers.slice(0, 5)} unitLabel="tiket" />
-              </Panel>
-              <Panel title="Top Supplier" subtitle="Barang masuk terbanyak">
-                <RankTable data={suppliers.slice(0, 5)} unitLabel="tiket" />
-              </Panel>
-            </div>
-          </>
-        )
+        return <OverviewView rows={filteredRows} />
     }
   }
 

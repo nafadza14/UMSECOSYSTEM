@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
 import { ThemeProvider } from './lib/theme'
+import { PricesProvider } from './lib/prices'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
@@ -28,7 +29,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
-      <AuthProvider>
+      <PricesProvider>
+       <AuthProvider>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -43,7 +45,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
+       </AuthProvider>
+      </PricesProvider>
     </ThemeProvider>
   </React.StrictMode>,
 )

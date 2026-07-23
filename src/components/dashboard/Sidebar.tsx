@@ -6,6 +6,7 @@ import {
   Users,
   Truck,
   Activity,
+  Tags,
   ArrowLeft,
   LogOut,
   type LucideIcon,
@@ -13,7 +14,14 @@ import {
 import ThemeToggle from '../ThemeToggle'
 import { useAuth } from '../../contexts/AuthContext'
 
-export type ViewKey = 'overview' | 'feed' | 'product' | 'customer' | 'supplier' | 'monitor'
+export type ViewKey =
+  | 'overview'
+  | 'feed'
+  | 'product'
+  | 'customer'
+  | 'supplier'
+  | 'monitor'
+  | 'harga'
 
 export const NAV: { key: ViewKey; label: string; icon: LucideIcon }[] = [
   { key: 'overview', label: 'Ringkasan', icon: LayoutDashboard },
@@ -22,6 +30,7 @@ export const NAV: { key: ViewKey; label: string; icon: LucideIcon }[] = [
   { key: 'customer', label: 'Customer', icon: Users },
   { key: 'supplier', label: 'Supplier', icon: Truck },
   { key: 'monitor', label: 'Monitor Agent', icon: Activity },
+  { key: 'harga', label: 'Harga', icon: Tags },
 ]
 
 export default function Sidebar({

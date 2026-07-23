@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import type { Weighing } from '../../lib/types'
 import { formatKgFull } from '../../lib/data'
+import { usePrices, valueOf, valueKind, formatRp } from '../../lib/prices'
 
 /** Tabel transaksi detail — kolom mengikuti database Truck Scale (.mdb). */
 export default function DetailTable({
@@ -12,10 +13,12 @@ export default function DetailTable({
   rows: Weighing[]
   onClose: () => void
 }) {
+  const { prices } = usePrices()
   const sorted = [...rows].sort((a, b) =>
     (b.date_in + b.time_in).localeCompare(a.date_in + a.time_in),
   )
   const total = rows.reduce((s, r) => s + r.netto_kg, 0)
+  const totalValue = rows.reduce((s, r) => s + valueOf(r, prices), 0)
   const num = (v: number) => (v ? v.toLocaleString('id-ID') : '-')
 
   return (
@@ -24,7 +27,7 @@ export default function DetailTable({
         <div>
           <h3 className="text-base font-medium">Detail: {title}</h3>
           <p className="text-sm text-[var(--muted)]">
-            {rows.length} transaksi · total netto {formatKgFull(total)}
+            {rows.length} transaksi · total netto {formatKgFull(total)} · nilai {formatRp(totalValue)}
           </p>
         </div>
         <button
@@ -50,6 +53,7 @@ export default function DetailTable({
               <th className="font-normal py-2 px-2 text-right">Bruto (W1)</th>
               <th className="font-normal py-2 px-2 text-right">Tara (W2)</th>
               <th className="font-normal py-2 px-2 text-right">Netto</th>
+              <th className="font-normal py-2 px-2 text-right">Nilai (Rp)</th>
               <th className="font-normal py-2 px-2">Operator</th>
               <th className="font-normal py-2 px-2">Status</th>
             </tr>
@@ -80,6 +84,11 @@ export default function DetailTable({
                 <td className="py-2 px-2 text-right tabular-nums whitespace-nowrap">{num(r.gross_kg)}</td>
                 <td className="py-2 px-2 text-right tabular-nums whitespace-nowrap">{num(r.tare_kg)}</td>
                 <td className="py-2 px-2 text-right tabular-nums whitespace-nowrap font-medium">{num(r.netto_kg)}</td>
+                <td className="py-2 px-2 text-right tabular-nums whitespace-nowrap">
+                  {valueKind(r) === 'jasa'
+                    ? `${formatRp(valueOf(r, prices))} (jasa)`
+                    : formatRp(valueOf(r, prices))}
+                </td>
                 <td className="py-2 px-2 text-[var(--muted)] whitespace-nowrap">{r.operator}</td>
                 <td className="py-2 px-2">
                   {r.status === 'in_progress' ? (
