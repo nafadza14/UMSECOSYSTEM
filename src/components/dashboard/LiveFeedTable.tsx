@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import type { Weighing } from '../../lib/types'
-import { formatKgFull } from '../../lib/data'
+import { formatKgFull, formatShortDate } from '../../lib/data'
 import { usePrices, valueKind, formatRp } from '../../lib/prices'
+import { useTheme } from '../../lib/theme'
 
 type Filter = 'all' | 'customer' | 'supplier'
 type Period = 'day' | 'week' | 'month'
@@ -13,12 +14,9 @@ const PERIODS: { key: Period; label: string }[] = [
   { key: 'month', label: 'Bulan' },
 ]
 
-// Ambang tanggal (YYYY-MM-DD) berdasarkan tanggal terbaru di data.
-function threshold(period: Period, maxDate: string): string {
-  if (!maxDate) return ''
-  if (period === 'day') return maxDate
-  const d = new Date(maxDate)
-  d.setDate(d.getDate() - (period === 'week' ? 6 : 29))
+function addDays(iso: string, n: number): string {
+  const d = new Date(iso)
+  d.setDate(d.getDate() + n)
   return d.toISOString().slice(0, 10)
 }
 
@@ -30,19 +28,37 @@ export default function LiveFeedTable({
   flashIds: Set<string>
 }) {
   const { valueOf } = usePrices()
+  const { theme } = useTheme()
   const [filter, setFilter] = useState<Filter>('all')
-  const [period, setPeriod] = useState<Period>('day')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [q, setQ] = useState('')
 
-  const maxDate = useMemo(
-    () => rows.reduce((m, r) => (r.date_in > m ? r.date_in : m), ''),
-    [rows],
-  )
+  const { minDate, maxDate } = useMemo(() => {
+    let mn = ''
+    let mx = ''
+    rows.forEach((r) => {
+      if (!mn || r.date_in < mn) mn = r.date_in
+      if (r.date_in > mx) mx = r.date_in
+    })
+    return { minDate: mn, maxDate: mx }
+  }, [rows])
+
+  // Default: hari terakhir
+  useEffect(() => {
+    if (maxDate) {
+      setFrom(maxDate)
+      setTo(maxDate)
+    }
+  }, [maxDate])
+
+  const lo = from && to ? (from <= to ? from : to) : from || to
+  const hi = from && to ? (from <= to ? to : from) : from || to
 
   const filtered = useMemo(() => {
-    const thr = threshold(period, maxDate)
     return rows.filter((r) => {
-      if (thr && r.date_in < thr) return false
+      if (lo && r.date_in < lo) return false
+      if (hi && r.date_in > hi) return false
       if (filter !== 'all' && r.type !== filter) return false
       if (q) {
         const s = q.toLowerCase()
@@ -55,7 +71,28 @@ export default function LiveFeedTable({
       }
       return true
     })
-  }, [rows, filter, period, q, maxDate])
+  }, [rows, filter, lo, hi, q])
+
+  const preset = (kind: Period) => {
+    if (!maxDate) return
+    if (kind === 'day') {
+      setFrom(maxDate)
+      setTo(maxDate)
+    } else if (kind === 'week') {
+      setTo(maxDate)
+      const f = addDays(maxDate, -6)
+      setFrom(f < minDate ? minDate : f)
+    } else {
+      setFrom(minDate)
+      setTo(maxDate)
+    }
+  }
+
+  const weekStart = maxDate ? (addDays(maxDate, -6) < minDate ? minDate : addDays(maxDate, -6)) : ''
+  const isDay = lo === maxDate && hi === maxDate
+  const isMonth = lo === minDate && hi === maxDate
+  const isWeek = !isDay && !isMonth && lo === weekStart && hi === maxDate
+  const activePeriod: Period | null = isDay ? 'day' : isWeek ? 'week' : isMonth ? 'month' : null
 
   return (
     <div className="glass border border-[var(--border)] rounded-2xl p-5">
@@ -70,18 +107,18 @@ export default function LiveFeedTable({
           </h3>
           <p className="text-sm text-[var(--muted)]">
             {filtered.length} tiket ·{' '}
-            {period === 'day' ? 'hari terakhir' : period === 'week' ? '7 hari' : '30 hari'}
+            {lo === hi ? formatShortDate(lo) : `${formatShortDate(lo)} – ${formatShortDate(hi)}`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Periode: Hari / Minggu / Bulan */}
+          {/* Periode cepat: Hari / Minggu / Bulan */}
           <div className="flex rounded-lg bg-[var(--chip)] p-0.5 text-xs">
             {PERIODS.map((p) => (
               <button
                 key={p.key}
-                onClick={() => setPeriod(p.key)}
+                onClick={() => preset(p.key)}
                 className={`px-3 py-1.5 rounded-md transition-colors ${
-                  period === p.key
+                  activePeriod === p.key
                     ? 'bg-[var(--pill-active-bg)] text-[var(--pill-active-text)]'
                     : 'text-[var(--muted2)] hover:text-[var(--text)]'
                 }`}
@@ -89,6 +126,30 @@ export default function LiveFeedTable({
                 {p.label}
               </button>
             ))}
+          </div>
+
+          {/* Kalender: Dari / Sampai */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-[var(--muted)]">Dari</span>
+            <input
+              type="date"
+              value={from}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => setFrom(e.target.value)}
+              style={{ colorScheme: theme }}
+              className="bg-[var(--chip)] rounded-lg px-2.5 py-1.5 text-sm border border-[var(--border)] focus:outline-none"
+            />
+            <span className="text-xs text-[var(--muted)]">Sampai</span>
+            <input
+              type="date"
+              value={to}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => setTo(e.target.value)}
+              style={{ colorScheme: theme }}
+              className="bg-[var(--chip)] rounded-lg px-2.5 py-1.5 text-sm border border-[var(--border)] focus:outline-none"
+            />
           </div>
 
           {/* Tipe: Semua / Customer / Supplier */}
